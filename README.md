@@ -92,7 +92,17 @@ Here’s an overview of key functions in the project:
 
 ---
 
-## Watch BOTH the YOUTUBE LINK FOR RESULTS AND DEMO:
+
+## Results:
+### Examples of extracted and stored:
+■ T ext with metadata.
+■ T ables with structure and description.
+■ Image descriptions with metadata.
+
+[Watch the video on YouTube](https://youtu.be/gJWcaQbjL_Y)
+
+## Example queries demonstrating data retrieval from Qdrant.
+### Watch BOTH the YOUTUBE LINK FOR RESULTS AND DEMO:
 [Watch the video on YouTube](https://youtu.be/ISkghXJ5XKU)
 [Watch the video on YouTube](https://youtu.be/bVNKahqvcxM)
 
