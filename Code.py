@@ -35,9 +35,6 @@ load_dotenv()
 # Initialize AWS S3 client with local credentials
 s3_client = boto3.client('s3')
 s3_bucket_name = 'myexcelbucket123'  # Use your actual bucket name
-# Access the LLAMA_CLOUD_API_KEY environment variable
-llama_cloud_api_key = os.getenv("llama_cloud")
-
 
 openai_api_key = "sample"
 openai_api_base = "http://10.197.98.17:8081/v1"
@@ -65,16 +62,6 @@ if not openai_api_key:
     exit(1)
 openai.api_key = openai_api_key
 
-# Initialize LlamaParse
-llama_parser = LlamaParse(
-    api_key=llama_cloud_api_key,  # Use the API key from the environment variable
-    result_type="markdown",  # "markdown" and "text" are available
-    verbose=True,
-)
-
-# Initialize Google Vision client
-client = vision.ImageAnnotatorClient()
-
 # Initialize Qdrant client
 qdrant_api_key = os.getenv("QDRANT_API_KEY")  # Ensure this is set in your environment or .env file
 qdrant = qdrant_client.QdrantClient(
@@ -86,7 +73,7 @@ qdrant = qdrant_client.QdrantClient(
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Create Qdrant collection if it does not exist
-qdrant_collection_name = "pdf_metadata_suri"
+qdrant_collection_name = "pdf_metadata_surbhi123"
 try:
     # Check if the collection exists
     collections = qdrant.get_collections()
@@ -115,37 +102,6 @@ def encode_image_base64(image_path_or_url):
             image_bytes = image_file.read()
     return base64.b64encode(image_bytes).decode('utf-8')
 
-def extract_text_from_image(image_content):
-    """Extract text from an image using Google Vision API."""
-    image = vision.Image(content=image_content)
-    response = client.text_detection(image=image)
-    texts = response.text_annotations
-
-    extracted_texts = [text.description for text in texts]
-    logging.debug(f"Extracted texts: {extracted_texts}")
-    return extracted_texts
-
-def resize_base64_image(base64_string, size=(100, 100)):
-    """
-    Resize an image encoded as a Base64 string.
-
-    Args:
-    base64_string (str): Base64 string of the original image.
-    size (tuple): Desired size of the image as (width, height).
-
-    Returns:
-    str: Base64 string of the resized image.
-    """
-    # Decode the Base64 string
-    img_data = base64.b64decode(base64_string)
-    img = Image.open(io.BytesIO(img_data))
-    # Resize the image
-    resized_img = img.resize(size, Image.LANCZOS)
-    # Save the resized image to a bytes buffer
-    buffered = io.BytesIO()
-    resized_img.save(buffered, format=img.format)
-    # Encode the resized image to Base64
-    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 def enhance_text_in_image(image):
     """Enhance the text in the image."""
@@ -194,7 +150,7 @@ def generate_algorithm_description(text):
 
     try:
         chat_response = openai.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "user",
@@ -222,67 +178,46 @@ def generate_algorithm_description(text):
         logging.error(f"Error generating algorithm description: {e}")
         return "Error generating description."
 
-
-
-# def generate_image_description(image_url):
-#     """Generate a description for an image using GPT-4."""
-#     logging.debug(f"Generating image description for image URL: {image_url}")
+# def generate_algorithm_description(text):
+#     """Generate a detailed description of the algorithm."""
+#     logging.debug(f"Generating algorithm description for text: {text}")
 #     prompt = (
-#         "You are given the following algorithm description in the form of a flowchart. "
-#         "Please provide a detailed and accurate explanation of the algorithm, "
-#         "including the specific steps involved. "
-#         "Focus on the logical flow and decisions made at each step, and avoid making any assumptions or adding information that is not present in the flowchart. "
-#         "Ensure that the description is clear, concise, and directly related to the content of the flowchart."
+#         "You are given the following algorithm description: "
+#         f"{text}. Please provide a detailed explanation of the algorithm, "
+#         "including the steps involved and the overall goal of the algorithm."
 #     )
 #     logging.debug(f"Prompt: {prompt}")
 
 #     try:
-#         response = openai.ChatCompletion.create(
-#             model="gpt-4o",
+#         chat_response = llm_client.chat.completions.create(
+#             model="llava-v1.5-7b",
 #             messages=[
-#         {
-#             "role": "user",
-#             "content": [
-#                 {"type": "text", "text": prompt},
 #                 {
-#                     "type": "image_url",
-#                     "image_url": {"url": f"{image_url}"},
+#                     "role": "user",
+#                     "content": prompt,
 #                 },
 #             ],
-#         }
-#     ],
-#             max_tokens=1000
+#             max_tokens=1000,
+#             stream=False  # Set stream to False to get the complete response at once
 #         )
 
 #         # Print the entire response for debugging
-#         logging.debug(f"Chat response: {response}")
+#         logging.debug(f"Chat response: {chat_response}")
 
 #         # Check if the response contains choices
-#         if response and 'choices' in response and len(response.choices) > 0:
-#             description = response.choices[0].message['content']
+#         if chat_response and hasattr(chat_response, 'choices') and len(chat_response.choices) > 0:
+#             description = chat_response.choices[0].message.content
 #             logging.debug(f"Generated description: {description.strip()}")
 #             return description.strip()
 #         else:
 #             logging.error("No choices found in the response.")
-#             logging.debug(f"Full response content: {response}")
+#             logging.debug(f"Full response content: {chat_response}")
 #             return "No description generated."
 
 #     except Exception as e:
-#         logging.error(f"Error generating image description with GPT-4: {e}")
-#         return None
-    
-def retry_with_exponential_backoff(func, max_retries=5, initial_delay=1, backoff_factor=2):
-    """Retry a function with exponential backoff."""
-    delay = initial_delay
-    for attempt in range(max_retries):
-        try:
-            return func()
-        except openai.error.RateLimitError as e:
-            logging.warning(f"Rate limit exceeded. Retrying in {delay} seconds...")
-            time.sleep(delay)
-            delay *= backoff_factor
-    raise Exception("Max retries exceeded")   
- 
+#         logging.error(f"Error generating algorithm description: {e}")
+#         return "Error generating description."
+
 def generate_image_description(image_url):
     """Generate a description for an image using GPT-4."""
     logging.debug(f"Generating image description for image URL: {image_url}")
@@ -295,19 +230,23 @@ def generate_image_description(image_url):
     )
     logging.debug(f"Prompt: {prompt}")
 
-    def request():
-        return openai.ChatCompletion.create(
+    try:
+        response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a helpful algorithmic flowchart assistant."},
-                {"role": "user", "content": prompt},
-                {"role": "user", "content": f"Here is the image URL: {image_url}"}
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"{image_url}"},
+                },
             ],
+        }
+    ],
             max_tokens=1000
         )
-
-    try:
-        response = retry_with_exponential_backoff(request)
 
         # Print the entire response for debugging
         logging.debug(f"Chat response: {response}")
@@ -325,9 +264,25 @@ def generate_image_description(image_url):
     except Exception as e:
         logging.error(f"Error generating image description with GPT-4: {e}")
         return None
+    
 
- 
 def generate_image_description_fallback(image_url):
+    """
+    Generate a description for an image using the llava model.
+
+    This function takes an image URL, encodes the image to base64, and sends a request to the llava model
+    to generate a detailed and accurate description of the image. The description focuses on the logical flow
+    and decisions made at each step, avoiding assumptions or adding information not present in the image.
+
+    Args:
+        image_url (str): The URL of the image to be described.
+
+    Returns:
+        str: The generated description of the image, or an error message if the description could not be generated.
+
+    Raises:
+        Exception: If there is an error during the description generation process.
+    """
     """Generate a description for an image using llava."""
     logging.debug(f"Generating image description for image URL: {image_url}")
     prompt = (
@@ -348,9 +303,9 @@ def generate_image_description_fallback(image_url):
         full_url = f"{openai_api_base}/chat/completions"
         logging.debug(f"Full URL: {full_url}")
 
-        chat_response = openai.chat.completions.create(
-            # model="llava-v1.5-7b",
-            model="gpt-4",
+        chat_response = llm_client.chat.completions.create(
+            model="llava-v1.5-7b",
+            # model="gpt-4",
             messages=[
                 {
                     "role": "user",
@@ -394,7 +349,7 @@ def classify_and_process_image(image_url, page_num):
     # Generate a description using the image URL
     description = generate_image_description(image_url)
     if not description:
-        description = generate_image_description_fallback(image_url)
+     description = generate_image_description_fallback(image_url)
     metadata = {"type": "image", "description": description, "page": page_num}
     vector = model.encode(description).tolist()
     point_id = str(uuid.uuid4())
@@ -436,6 +391,7 @@ def upload_to_s3(file_path, bucket_name, object_name=None):
             # Something else has gone wrong.
             logging.error(f"Error checking if {file_path} exists in S3: {e}")
             return None
+        
 def extract_images(pages_content):
     """Extract images from the PDF pages content."""
     logging.debug("Extracting images from PDF")
@@ -480,6 +436,7 @@ def is_table(data):
     if isinstance(data, list) and all(isinstance(row, list) for row in data):
         return True
     return False
+
 def generate_table_description(table_json):
     """Generate a description for a table."""
     logging.debug("Generating table description")
@@ -554,8 +511,8 @@ def generate_table_description_fallback(table_json):
         logging.debug(f"Chat response: {chat_response}")
 
         # Check if the response contains choices
-        if chat_response and 'choices' in chat_response and len(chat_response.choices) > 0:
-            description = chat_response.choices[0].message['content']
+        if chat_response and hasattr(chat_response, 'choices') and len(chat_response.choices) > 0:
+            description = chat_response.choices[0].message.content
             logging.debug(f"Generated description: {description.strip()}")
             return description.strip()
         else:
@@ -564,7 +521,7 @@ def generate_table_description_fallback(table_json):
             return "No description generated."
 
     except Exception as e:
-        logging.error(f"Error generating table description with fallback model: {e}")
+        logging.error(f"Error generating image description: {e}")
         return "Error generating description."
 
 def extract_tables(pdf_path):
@@ -594,7 +551,7 @@ def extract_tables(pdf_path):
         table_json = json.dumps(cleaned_table)
         description = generate_table_description(table_json)
         if not description:
-            description = generate_table_description_fallback(table_json)
+         description = generate_table_description_fallback(table_json)
         metadata = {"type": "table", "table": table_json, "description": description, "page": table.page}
         table_metadata.append(metadata)
 
@@ -648,35 +605,11 @@ def extract_text(pages_content):
     logging.debug(f"Extracted text metadata: {text_metadata}")
     return text_metadata 
 
-def query_qdrant(query_text):
-    """Query Qdrant to retrieve relevant data based on the query."""
-    try:
-        # Generate embedding for the query text
-        query_vector = model.encode(query_text).tolist()
-
-        # Query Qdrant to retrieve relevant points
-        response = qdrant.search(
-            collection_name=qdrant_collection_name,
-            query_vector=query_vector,
-            limit=10  # Adjust the limit as needed
-        )
-
-        # Process the results
-        results = []
-        for point in response:
-            payload = point.payload
-            results.append(payload)
-
-        return results
-
-    except Exception as e:
-        logging.error(f"Error querying Qdrant: {e}")
-        return None
-
 def reconstruct_table(table_json):
     """Reconstruct the table from the JSON string."""
     table = json.loads(table_json)
     return table
+
 def load_pdf(file_path):
     """Extract content from PDF pages including text, images, and tables while the file is open."""
     logging.debug(f"Loading PDF from {file_path}")
