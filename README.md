@@ -67,28 +67,70 @@ This project provides a comprehensive solution for extracting and processing con
 
 Here’s an overview of key functions in the project:
 
-| **Function**                        | **Description**                                                                 |
-|-------------------------------------|---------------------------------------------------------------------------------|
-| `encode_image_base64`               | Encodes an image from a file path or URL to base64 format.                      |
-| `extract_text_from_image`           | Extracts text from an image using Google Vision API.                            |
-| `resize_base64_image`               | Resizes an image encoded as Base64 string.                                      |
-| `enhance_text_in_image`             | Enhances the text in an image.                                                 |
-| `generate_algorithm_description`    | Generates a detailed description of the algorithm.                              |
-| `retry_with_exponential_backoff`    | Retries a function with exponential backoff.                                    |
-| `generate_image_description`        | Generates a description for an image using GPT-4.                               |
-| `generate_image_description_fallback`| Generates a fallback description for an image.                                  |
-| `classify_and_process_image`        | Classifies and processes content in rectangular boxes.                          |
-| `upload_to_s3`                      | Uploads a file to an S3 bucket and returns the public URL.                      |
-| `extract_images`                    | Extracts images from PDF content.                                               |
-| `is_table`                          | Checks if the extracted data is a table.                                        |
-| `generate_table_description`        | Generates a description for a table.                                            |
-| `generate_table_description_fallback`| Generates a fallback description for a table.                                   |
-| `extract_tables`                    | Extracts and describes tables from a PDF using Camelot.                         |
-| `extract_text`                      | Extracts text from PDF with metadata.                                           |
-| `query_qdrant`                      | Queries Qdrant to retrieve relevant data.                                       |
-| `reconstruct_table`                 | Reconstructs a table from its JSON representation.                              |
-| `load_pdf`                          | Extracts content (text, images, tables) from PDF pages.                         |
-| `main`                              | Main function to execute the script.                                            |
+|Functions
+📜 encode_image_base64(image_path_or_url)
+Description:
+Encodes an image from a file path or URL into Base64 format.
+
+✨ enhance_text_in_image(image)
+Description:
+Enhances the text in the provided image for improved readability and processing.
+
+📘 generate_algorithm_description(text)
+Description:
+Generates a detailed and structured description of an algorithm based on the given text.
+
+🖼️ generate_image_description(image_url)
+Description:
+Creates a comprehensive description for an image using GPT-4o.
+
+🔄 generate_image_description_fallback(image_url)
+Description:
+Provides a fallback image description using an alternative model when primary methods are unavailable.
+
+📦 classify_and_process_image(image_url, page_num)
+Description:
+Classifies and processes content within rectangular boxes for the specified image and page number.
+
+☁️ upload_to_s3(file_path, bucket_name, object_name=None)
+Description:
+Uploads a file to an Amazon S3 bucket and returns its public URL.
+
+🖼️ extract_images(pages_content)
+Description:
+Extracts all images embedded in the content of PDF pages.
+
+📊 is_table(data)
+Description:
+Determines whether the extracted data represents a table.
+
+📝 generate_table_description(table_json)
+Description:
+Generates a detailed description of a table based on its JSON representation first trying with GPT-4o.
+
+🔄 generate_table_description_fallback(table_json)
+Description:
+Creates a fallback table description using an alternative method when primary approaches fail.
+
+📑 extract_tables(pdf_path)
+Description:
+Extracts and describes tables from a PDF file using Camelot.
+
+🖋️ extract_text(pages_content)
+Description:
+Extracts text along with metadata from the content of PDF pages.
+
+🔧 reconstruct_table(table_json)
+Description:
+Reconstructs a table from its JSON representation.
+
+📂 load_pdf(file_path)
+Description:
+Processes and extracts content (text, images, tables) from a PDF file.
+
+🚀 main()
+Description:
+The main function that executes the entire script.
 
 ---
 
@@ -128,11 +170,12 @@ This project leverages the following amazing tools and libraries:
 
 - [pdfplumber](https://github.com/jsvine/pdfplumber)
 - [pytesseract](https://github.com/madmaze/pytesseract)
-- [Google Cloud Vision API](https://cloud.google.com/vision)
 - [Qdrant](https://qdrant.tech/)
 - [Sentence Transformers](https://www.sbert.net/)
 - [Camelot](https://camelot-py.readthedocs.io/)
 - [OpenAI](https://openai.com)
+- [LM STUDIO](https://lmstudio.ai/)
+
 
 ---
 
