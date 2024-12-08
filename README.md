@@ -37,10 +37,8 @@ This project provides a comprehensive solution for extracting and processing con
     - Create a `.env` file in the root directory of the project.
     - Add the following environment variables:
         ```env
-        GOOGLE_APPLICATION_CREDENTIALS=path/to/your/google-credentials.json
         OPENAI_API_KEY=your-openai-api-key
         QDRANT_API_KEY=your-qdrant-api-key
-        LLAMA_CLOUD_API_KEY=your-llama-cloud-api-key
         ```
 
 ---
