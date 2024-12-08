@@ -95,8 +95,8 @@ Here’s an overview of key functions in the project:
 
 ## Results:
 ### Examples of extracted and stored:
-■ T ext with metadata.
-■ T ables with structure and description.
+■ Text with metadata.
+■ Tables with structure and description.
 ■ Image descriptions with metadata.
 
 [Watch the video on YouTube](https://youtu.be/gJWcaQbjL_Y)
